@@ -491,7 +491,7 @@ async def relative_binding_free_energy(
     dict
         Dictionary containing the address of the relative binding free energy results.
     """
-    from deepchem_server.core.fep.rbfe.utils.constants import NetworkPlanningConstants
+    from deepchem_server.core.primitives.fep.rbfe.utils.constants import NetworkPlanningConstants
 
     if overridden_rbfe_settings is not None:
         try:
@@ -701,7 +701,7 @@ async def collate_rbfe_results(
         Dictionary containing the address of the collated relative binding free energy results.
     """
     import pint
-    from deepchem_server.core.fep.rbfe.collate_rbfe_results import (
+    from deepchem_server.core.primitives.fep.rbfe.collate_rbfe_results import (
         process_input_files,
         get_ligands_from_results,
     )
@@ -760,3 +760,162 @@ async def collate_rbfe_results(
         raise HTTPException(status_code=500, detail=f"Collate relative binding free energy results failed: {str(e)}")
 
     return {"collate_relative_binding_free_energy_results_address": str(result)}
+
+
+@router.post("/transform")
+async def apply_transform(
+    profile_name: Annotated[str, Body()],
+    project_name: Annotated[str, Body()],
+    dataset_address: Annotated[str, Body()],
+    transform_type: Annotated[str, Body()],
+    column_name: Annotated[str, Body()],
+    new_column_name: Annotated[str, Body()],
+    output_key: Annotated[str, Body()],
+) -> dict:
+    """
+    Submits a transform job.
+
+    Parameters
+    ----------
+    profile_name: str
+        Name of the Profile where the job is run
+    project_name: str
+        Name of the Project where the job is run
+    dataset_address: str
+        datastore address of dataset to transform
+    transform_type: str
+        transform type to use (e.g., 'log' or 'norm')
+    column_name: str
+        name of the column to transform
+    new_column_name: str
+        name of the resulting column
+    output_key: str
+        name of the output transformed dataset
+    """
+    program: Dict = {
+        'program_name': 'transform',
+        'dataset_address': dataset_address,
+        'transform_type': transform_type,
+        'column_name': column_name,
+        'new_column_name': new_column_name,
+        'output_key': output_key
+    }
+
+    try:
+        result = run_job(profile_name=profile_name, project_name=project_name, program=program)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Transform failed: {str(e)}")
+
+    return {"transformed_file_address": str(result)}
+
+
+@router.post("/cluster")
+async def apply_cluster(
+    profile_name: Annotated[str, Body()],
+    project_name: Annotated[str, Body()],
+    dataset_address: Annotated[str, Body()],
+    num_clusters: Annotated[int, Body()],
+    column: Annotated[str, Body()],
+    output: Annotated[str, Body()],
+) -> dict:
+    """
+    Submits a clustering job.
+
+    Parameters
+    ----------
+    profile_name: str
+        Name of the Profile where the job is run
+    project_name: str
+        Name of the Project where the job is run
+    dataset_address: str
+        datastore address of dataset to cluster
+    num_clusters: int
+        Number of clusters (k)
+    column: str
+        The name of SMILES column to cluster
+    output: str
+        Output file prefix
+    """
+    program: Dict = {
+        'program_name': 'cluster',
+        'dataset_address': dataset_address,
+        'num_clusters': num_clusters,
+        'column': column,
+        'output': output
+    }
+
+    try:
+        result = run_job(profile_name=profile_name, project_name=project_name, program=program)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Clustering failed: {str(e)}")
+
+    # result will be a tuple of (prediction_address, cluster_center_address)
+    # The current HTTP response model expects a dict.
+    return {
+        "prediction_address": result[0],
+        "cluster_center_address": result[1],
+    }
+
+
+@router.post("/hyperparam-opt")
+async def apply_hyperparam_opt(
+    profile_name: Annotated[str, Body()],
+    project_name: Annotated[str, Body()],
+    model_type: Annotated[str, Body()],
+    train_address: Annotated[str, Body()],
+    valid_address: Annotated[str, Body()],
+    hyperparams: Annotated[Dict, Body()],
+    output_prefix: Annotated[str, Body()],
+    algorithm: Annotated[Optional[str], Body()] = "grid",
+    metric: Annotated[str, Body()] = "pearson_r2_score",
+    nb_epoch: Annotated[int, Body()] = 10,
+) -> dict:
+    """
+    Submits a hyperparameter optimization job.
+
+    Parameters
+    ----------
+    profile_name: str
+        Name of the Profile where the job is run
+    project_name: str
+        Name of the Project where the job is run
+    model_type: str
+        Model type name recognizable by deepchem_server
+    train_address: str
+        datastore address of training dataset
+    valid_address: str
+        datastore address of validation dataset
+    hyperparams: Dict
+        dictionary of hyperparameter names mapped to lists of values to search
+    output_prefix: str
+        Output prefix for best model and search results
+    algorithm: Optional[str]
+        Hyperparameter selection algorithm (Default: grid)
+    metric: str
+        Evaluation metric name
+    nb_epoch: int
+        Number of epochs to train each candidate model
+    """
+    program: Dict = {
+        'program_name': 'hyperparam_opt',
+        'model_type': model_type,
+        'train_address': train_address,
+        'valid_address': valid_address,
+        'hyperparams': hyperparams,
+        'output_prefix': output_prefix,
+        'algorithm': algorithm,
+        'metric': metric,
+        'nb_epoch': nb_epoch
+    }
+
+    try:
+        result = run_job(profile_name=profile_name, project_name=project_name, program=program)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Hyperparameter optimization failed: {str(e)}")
+
+    # result will be a tuple: (model_address, output_address_best_hyperparams, output_address)
+    return {
+        "model_address": result[0],
+        "best_hyperparams_address": result[1],
+        "all_results_address": result[2],
+    }
