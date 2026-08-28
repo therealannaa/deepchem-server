@@ -4,12 +4,21 @@ from deepchem_server.core.primitives.del_denoising import del_denoise
 from deepchem_server.core.primitives.docking import generate_pose
 from deepchem_server.core.primitives.evaluator import model_evaluator
 from deepchem_server.core.primitives.feat import featurize
-from deepchem_server.core.primitives.fep.rbfe.collate_rbfe_results import collate_rbfe_results
-from deepchem_server.core.primitives.fep.rbfe.run_rbfe import run_rbfe
 from deepchem_server.core.primitives.inference import infer
 from deepchem_server.core.primitives.partition import partition
 from deepchem_server.core.primitives.splitter import train_valid_test_split
 from deepchem_server.core.primitives.train import train
+from deepchem_server.core.primitives.transform import transform
+
+
+def lazy_run_rbfe(*args, **kwargs):
+    from deepchem_server.core.primitives.fep.rbfe.run_rbfe import run_rbfe as _run_rbfe
+    return _run_rbfe(*args, **kwargs)
+
+
+def lazy_collate_rbfe_results(*args, **kwargs):
+    from deepchem_server.core.primitives.fep.rbfe.collate_rbfe_results import collate_rbfe_results as _collate_rbfe_results
+    return _collate_rbfe_results(*args, **kwargs)
 
 
 program_map = {
@@ -20,9 +29,10 @@ program_map = {
     "partition": partition,
     "train_valid_test_split": train_valid_test_split,
     "generate_pose": generate_pose,
-    "relative_binding_free_energy": run_rbfe,
-    "collate_rbfe_results": collate_rbfe_results,
+    "relative_binding_free_energy": lazy_run_rbfe,
+    "collate_rbfe_results": lazy_collate_rbfe_results,
     "del_denoise": del_denoise,
+    "transform": transform,
 }
 
 

@@ -3,8 +3,6 @@ import logging
 import math
 from typing import Dict, Optional
 
-from deepchem.models.torch_models import TorchModel
-
 from deepchem_server.core.common import config, model_mappings
 from deepchem_server.core.common.address import DeepchemAddress
 from deepchem_server.core.common.cards import ModelCard
@@ -85,7 +83,13 @@ def train(model_type: str,
     dataset = datastore.get(dataset_address)
 
     # if the model is a TorchModel, add a callback to log the epoch number
-    if isinstance(model, TorchModel):
+    try:
+        from deepchem.models.torch_models import TorchModel
+        is_torch = isinstance(model, TorchModel)
+    except ImportError:
+        is_torch = False
+
+    if is_torch:
         batch_size = init_kwargs.get('batch_size', 100)
         nb_epoch = train_kwargs.get('nb_epoch', 10)
         total_steps = math.ceil(dataset.get_shape()[0][0] / batch_size) * nb_epoch
