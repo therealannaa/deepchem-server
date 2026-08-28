@@ -14,6 +14,7 @@ from .infer import Infer
 from .partition import Partition
 from .splitter import TVTSplit
 from .train import Train
+from .hyperparam_opt import HyperparamOpt
 
 
 __all__ = [
@@ -26,4 +27,5 @@ __all__ = [
     "Infer",
     "Partition",
     "TVTSplit",
+    "HyperparamOpt",
 ]

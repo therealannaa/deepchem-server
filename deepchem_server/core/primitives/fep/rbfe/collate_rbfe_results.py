@@ -1,3 +1,46 @@
+# Patch Pydantic V2 and V1 to prevent OpenFE validation conflicts
+try:
+    import pydantic
+    if hasattr(pydantic, "main") and hasattr(pydantic.main, "ModelMetaclass"):
+        _orig_new = pydantic.main.ModelMetaclass.__new__
+
+        def _patched_new(mcs, name, bases, namespace, **kwargs):
+            if "reassign_velocities" in namespace:
+                annotations = namespace.setdefault("__annotations__", {})
+                if "reassign_velocities" not in annotations:
+                    annotations["reassign_velocities"] = bool
+            return _orig_new(mcs, name, bases, namespace, **kwargs)
+
+        pydantic.main.ModelMetaclass.__new__ = _patched_new
+
+    import pydantic.class_validators as cv
+    _orig_v1 = cv.validator
+
+    def _patched_v1(*args, **kwargs):
+        kwargs['allow_reuse'] = True
+        return _orig_v1(*args, **kwargs)
+
+    cv.validator = _patched_v1
+    if hasattr(pydantic, "validator"):
+        pydantic.validator = _patched_v1
+except Exception:
+    pass
+
+try:
+    import pydantic.v1.class_validators as cv_v2
+    _orig_v2 = cv_v2.validator
+
+    def _patched_v2(*args, **kwargs):
+        kwargs['allow_reuse'] = True
+        return _orig_v2(*args, **kwargs)
+
+    cv_v2.validator = _patched_v2
+    import pydantic.v1 as pv1
+    if hasattr(pv1, "validator"):
+        pv1.validator = _patched_v2
+except Exception:
+    pass
+
 import json
 import logging
 import os
