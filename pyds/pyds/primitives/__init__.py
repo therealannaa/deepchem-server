@@ -14,6 +14,7 @@ from .infer import Infer
 from .partition import Partition
 from .splitter import TVTSplit
 from .train import Train
+from .clustering import Clustering
 
 
 __all__ = [
@@ -26,4 +27,5 @@ __all__ = [
     "Infer",
     "Partition",
     "TVTSplit",
+    "Clustering",
 ]
