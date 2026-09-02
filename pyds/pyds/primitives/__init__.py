@@ -15,6 +15,7 @@ from .partition import Partition
 from .splitter import TVTSplit
 from .train import Train
 from .hyperparam_opt import HyperparamOpt
+from .evo_hyperparam_opt import EvoHyperparamOpt
 
 
 __all__ = [
@@ -28,4 +29,5 @@ __all__ = [
     "Partition",
     "TVTSplit",
     "HyperparamOpt",
+    "EvoHyperparamOpt",
 ]

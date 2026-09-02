@@ -9,6 +9,7 @@ from deepchem_server.core.primitives.partition import partition
 from deepchem_server.core.primitives.splitter import train_valid_test_split
 from deepchem_server.core.primitives.train import train
 from deepchem_server.core.primitives.hyperparam_opt import hyperparam_opt
+from deepchem_server.core.primitives.evo_hyperparam_opt import evo_hyperparam_opt
 
 
 def lazy_run_rbfe(*args, **kwargs):
@@ -33,6 +34,7 @@ program_map = {
     "collate_rbfe_results": lazy_collate_rbfe_results,
     "del_denoise": del_denoise,
     "hyperparam_opt": hyperparam_opt,
+    "evo_hyperparam_opt": evo_hyperparam_opt,
 }
 
 

@@ -824,3 +824,55 @@ async def apply_hyperparam_opt(
         "best_hyperparams_address": result[1],
         "all_results_address": result[2],
     }
+
+
+@router.post("/evo-hyperparam-opt")
+async def apply_evo_hyperparam_opt(
+    profile_name: Annotated[str, Body()],
+    project_name: Annotated[str, Body()],
+    model_type: Annotated[str, Body()],
+    train_address: Annotated[str, Body()],
+    valid_address: Annotated[str, Body()],
+    hyperparams_space: Annotated[Dict, Body()],
+    output_prefix: Annotated[str, Body()],
+    metric: Annotated[str, Body()] = "pearson_r2_score",
+    population_size: Annotated[int, Body()] = 4,
+    generations: Annotated[int, Body()] = 3,
+    nb_epoch: Annotated[int, Body()] = 10,
+    max_evals: Annotated[int, Body()] = 100,
+    seed: Annotated[Optional[int], Body()] = None,
+) -> dict:
+    """
+    Submits an evolutionary hyperparameter optimization job.
+    """
+    if isinstance(hyperparams_space, str):
+        hyperparams_space = json.loads(hyperparams_space)
+
+    program: Dict = {
+        "program_name": "evo_hyperparam_opt",
+        "model_type": model_type,
+        "train_address": train_address,
+        "valid_address": valid_address,
+        "hyperparams_space": hyperparams_space,
+        "output_prefix": output_prefix,
+        "metric": metric,
+        "population_size": population_size,
+        "generations": generations,
+        "nb_epoch": nb_epoch,
+        "max_evals": max_evals,
+    }
+    
+    if seed is not None:
+        program["seed"] = seed
+
+    try:
+        result = run_job(profile_name=profile_name, project_name=project_name, program=program)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Evolutionary Hyperparameter optimization failed: {str(e)}")
+
+    best_model_addr, best_hp_addr, all_res_addr = result
+    return {
+        "model_address": str(best_model_addr),
+        "best_hyperparams_address": str(best_hp_addr),
+        "all_results_address": str(all_res_addr)
+    }

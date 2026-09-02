@@ -9,6 +9,7 @@ from deepchem_server.core.primitives.inference import infer
 from deepchem_server.core.primitives.partition import partition
 from deepchem_server.core.primitives.splitter import train_valid_test_split
 from deepchem_server.core.primitives.train import train
+from deepchem_server.core.primitives.evo_hyperparam_opt import evo_hyperparam_opt
 
 
 __all__ = [
@@ -21,4 +22,5 @@ __all__ = [
     "generate_pose",
     "ComputeWorkflow",
     "program_map",
+    "evo_hyperparam_opt",
 ]
