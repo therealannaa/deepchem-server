@@ -819,3 +819,67 @@ async def ligand_prep_primitive(
         raise HTTPException(status_code=500, detail=f"Ligand preparation failed: {str(e)}")
 
     return {"ligand_sdf_address": str(result)}
+
+
+@router.post("/hyperparam-opt")
+async def apply_hyperparam_opt(
+    profile_name: Annotated[str, Body()],
+    project_name: Annotated[str, Body()],
+    model_type: Annotated[str, Body()],
+    train_address: Annotated[str, Body()],
+    valid_address: Annotated[str, Body()],
+    hyperparams: Annotated[Dict, Body()],
+    output_prefix: Annotated[str, Body()],
+    algorithm: Annotated[Optional[str], Body()] = "grid",
+    metric: Annotated[str, Body()] = "pearson_r2_score",
+    nb_epoch: Annotated[int, Body()] = 10,
+) -> dict:
+    """
+    Submits a hyperparameter optimization job.
+
+    Parameters
+    ----------
+    profile_name: str
+        Name of the Profile where the job is run
+    project_name: str
+        Name of the Project where the job is run
+    model_type: str
+        Model type name recognizable by deepchem_server
+    train_address: str
+        datastore address of training dataset
+    valid_address: str
+        datastore address of validation dataset
+    hyperparams: Dict
+        dictionary of hyperparameter names mapped to lists of values to search
+    output_prefix: str
+        Output prefix for best model and search results
+    algorithm: Optional[str]
+        Hyperparameter selection algorithm (Default: grid)
+    metric: str
+        Evaluation metric name
+    nb_epoch: int
+        Number of epochs to train each candidate model
+    """
+    program: Dict = {
+        'program_name': 'hyperparam_opt',
+        'model_type': model_type,
+        'train_address': train_address,
+        'valid_address': valid_address,
+        'hyperparams': hyperparams,
+        'output_prefix': output_prefix,
+        'algorithm': algorithm,
+        'metric': metric,
+        'nb_epoch': nb_epoch
+    }
+
+    try:
+        result = run_job(profile_name=profile_name, project_name=project_name, program=program)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Hyperparameter optimization failed: {str(e)}")
+
+    # result will be a tuple: (model_address, output_address_best_hyperparams, output_address)
+    return {
+        "model_address": result[0],
+        "best_hyperparams_address": result[1],
+        "all_results_address": result[2],
+    }
