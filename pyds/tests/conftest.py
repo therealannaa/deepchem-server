@@ -11,7 +11,7 @@ import responses
 from pyds import Settings
 from pyds.base.client import BaseClient
 from pyds.data import Data
-from pyds.primitives import DelDenoise, Evaluate, Featurize, Infer, Partition, Train
+from pyds.primitives import DelDenoise, Evaluate, Featurize, Infer, Partition, Train, HyperparamOpt
 
 from .test_utils import (
     cleanup_temp_file,
@@ -96,6 +96,12 @@ def partition_client(test_settings: Settings) -> Partition:
 def del_denoise_client(test_settings: Settings) -> DelDenoise:
     """Create DelDenoise primitive client for testing."""
     return DelDenoise(settings=test_settings)
+
+
+@pytest.fixture
+def hyperparam_opt_client(test_settings: Settings) -> HyperparamOpt:
+    """Create HyperparamOpt primitive client for testing."""
+    return HyperparamOpt(settings=test_settings)
 
 
 @pytest.fixture
@@ -248,6 +254,12 @@ def live_partition_client(live_settings: Settings) -> Partition:
 def live_del_denoise_client(live_settings: Settings) -> DelDenoise:
     """Create DelDenoise client for live server testing."""
     return DelDenoise(settings=live_settings)
+
+
+@pytest.fixture
+def live_hyperparam_opt_client(live_settings: Settings) -> HyperparamOpt:
+    """Create HyperparamOpt client for live server testing."""
+    return HyperparamOpt(settings=live_settings)
 
 
 # ===========================
