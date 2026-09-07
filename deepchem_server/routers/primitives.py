@@ -819,3 +819,51 @@ async def ligand_prep_primitive(
         raise HTTPException(status_code=500, detail=f"Ligand preparation failed: {str(e)}")
 
     return {"ligand_sdf_address": str(result)}
+
+
+@router.post("/cluster")
+async def apply_cluster(
+    profile_name: Annotated[str, Body()],
+    project_name: Annotated[str, Body()],
+    dataset_address: Annotated[str, Body()],
+    num_clusters: Annotated[int, Body()],
+    column: Annotated[str, Body()],
+    output: Annotated[str, Body()],
+) -> dict:
+    """
+    Submits a clustering job.
+
+    Parameters
+    ----------
+    profile_name: str
+        Name of the Profile where the job is run
+    project_name: str
+        Name of the Project where the job is run
+    dataset_address: str
+        datastore address of dataset to cluster
+    num_clusters: int
+        Number of clusters (k)
+    column: str
+        The name of SMILES column to cluster
+    output: str
+        Output file prefix
+    """
+    program: Dict = {
+        'program_name': 'cluster',
+        'dataset_address': dataset_address,
+        'num_clusters': num_clusters,
+        'column': column,
+        'output': output
+    }
+
+    try:
+        result = run_job(profile_name=profile_name, project_name=project_name, program=program)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Clustering failed: {str(e)}")
+
+    # result will be a tuple of (prediction_address, cluster_center_address)
+    # The current HTTP response model expects a dict.
+    return {
+        "prediction_address": result[0],
+        "cluster_center_address": result[1],
+    }
