@@ -18,6 +18,7 @@ from .primitives.infer import Infer
 from .primitives.partition import Partition
 from .primitives.splitter import TVTSplit
 from .primitives.train import Train
+from .primitives.clustering import Clustering
 from .settings import Settings
 
 
@@ -34,4 +35,5 @@ __all__ = [
     "Infer",
     "Partition",
     "TVTSplit",
+    "Clustering",
 ]
