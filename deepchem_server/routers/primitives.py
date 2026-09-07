@@ -819,3 +819,50 @@ async def ligand_prep_primitive(
         raise HTTPException(status_code=500, detail=f"Ligand preparation failed: {str(e)}")
 
     return {"ligand_sdf_address": str(result)}
+
+
+@router.post("/transform")
+async def apply_transform(
+    profile_name: Annotated[str, Body()],
+    project_name: Annotated[str, Body()],
+    dataset_address: Annotated[str, Body()],
+    transform_type: Annotated[str, Body()],
+    column_name: Annotated[str, Body()],
+    new_column_name: Annotated[str, Body()],
+    output_key: Annotated[str, Body()],
+) -> dict:
+    """
+    Submits a transform job.
+
+    Parameters
+    ----------
+    profile_name: str
+        Name of the Profile where the job is run
+    project_name: str
+        Name of the Project where the job is run
+    dataset_address: str
+        datastore address of dataset to transform
+    transform_type: str
+        transform type to use (e.g., 'log' or 'norm')
+    column_name: str
+        name of the column to transform
+    new_column_name: str
+        name of the resulting column
+    output_key: str
+        name of the output transformed dataset
+    """
+    program: Dict = {
+        'program_name': 'transform',
+        'dataset_address': dataset_address,
+        'transform_type': transform_type,
+        'column_name': column_name,
+        'new_column_name': new_column_name,
+        'output_key': output_key
+    }
+
+    try:
+        result = run_job(profile_name=profile_name, project_name=project_name, program=program)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Transform failed: {str(e)}")
+
+    return {"transformed_file_address": str(result)}
