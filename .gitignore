@@ -21,3 +21,4 @@ pyds/pyds.egg-info/
 
 .venv/
 .deepchem/
+uv.lock
