@@ -11,7 +11,7 @@ import responses
 from pyds import Settings
 from pyds.base.client import BaseClient
 from pyds.data import Data
-from pyds.primitives import DelDenoise, Evaluate, Featurize, Infer, Partition, Train
+from pyds.primitives import DelDenoise, Evaluate, Featurize, Infer, Partition, Train, Transform, Clustering, HyperparamOpt
 
 from .test_utils import (
     cleanup_temp_file,
@@ -96,6 +96,24 @@ def partition_client(test_settings: Settings) -> Partition:
 def del_denoise_client(test_settings: Settings) -> DelDenoise:
     """Create DelDenoise primitive client for testing."""
     return DelDenoise(settings=test_settings)
+
+
+@pytest.fixture
+def transform_client(test_settings: Settings) -> Transform:
+    """Create Transform primitive client for testing."""
+    return Transform(settings=test_settings)
+
+
+@pytest.fixture
+def clustering_client(test_settings: Settings) -> Clustering:
+    """Create Clustering primitive client for testing."""
+    return Clustering(settings=test_settings)
+
+
+@pytest.fixture
+def hyperparam_opt_client(test_settings: Settings) -> HyperparamOpt:
+    """Create HyperparamOpt primitive client for testing."""
+    return HyperparamOpt(settings=test_settings)
 
 
 @pytest.fixture
@@ -248,6 +266,24 @@ def live_partition_client(live_settings: Settings) -> Partition:
 def live_del_denoise_client(live_settings: Settings) -> DelDenoise:
     """Create DelDenoise client for live server testing."""
     return DelDenoise(settings=live_settings)
+
+
+@pytest.fixture
+def live_transform_client(live_settings: Settings) -> Transform:
+    """Create Transform client for live server testing."""
+    return Transform(settings=live_settings)
+
+
+@pytest.fixture
+def live_clustering_client(live_settings: Settings) -> Clustering:
+    """Create Clustering client for live server testing."""
+    return Clustering(settings=live_settings)
+
+
+@pytest.fixture
+def live_hyperparam_opt_client(live_settings: Settings) -> HyperparamOpt:
+    """Create HyperparamOpt client for live server testing."""
+    return HyperparamOpt(settings=live_settings)
 
 
 # ===========================
